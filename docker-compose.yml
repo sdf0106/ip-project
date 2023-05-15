@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+#  project:
+#    build:
+#      context: ./../ip_project
+#      dockerfile: ./Dockerfile
+#    restart: always
+#    ports:
+#      - "8000:8000"
+#    deploy:
+#      mode: replicated
+#      replicas: 1
+#    links:
+#      - postgres
+
+  postgres:
+    image: 'postgres:14.7'
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=ip_project
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    env_file:
+      - .env
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
