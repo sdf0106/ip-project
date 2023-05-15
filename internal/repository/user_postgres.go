@@ -70,12 +70,53 @@ func (r *UserPostgres) UpdateUserInfo(userId int, user dto.UpdateUserInput) (dom
 	return result, nil
 }
 
-func (r *UserPostgres) ChangeRole(userId int, role string) error {
-	query := fmt.Sprintf("UPDATE %s Set user_type=%s WHERE user_id=$1", usersTable, role)
 
-	_, err := r.db.Exec(context.Background(), query, userId)
+func (r *UserPostgres) ChangeRole(userId int, prevRole string, role string) error {
+	prevRoleTable, err := getTableName(prevRole)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
-	return nil
+
+	roleTable, err := getTableName(role)
+	if err != nil {
+		return err
+	}
+
+	query1 := fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", prevRoleTable)
+	query2 := fmt.Sprintf("INSERT INTO %s (user_id) VALUES($1)", roleTable)
+
+	tx, err := r.db.Begin(context.Background())
+
+	_, err = tx.Exec(context.Background(), query1, userId)
+
+	if err != nil {
+		// Rollback the transaction in case of an error
+		tx.Rollback(context.Background())
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), query2, userId)
+
+	if err != nil {
+		// Rollback the transaction in case of an error
+		tx.Rollback(context.Background())
+		return err
+	}
+
+	err = tx.Commit(context.Background())
+
+	return err
+}
+
+func getTableName(role string) (string, error) {
+	switch role {
+	case "client":
+		return clientsTable, nil
+	case "owner":
+		return ownersTable, nil
+	case "agent":
+		return agentsTable, nil
+	default:
+		return role, errors.New("invalid type of user")
+	}
 }

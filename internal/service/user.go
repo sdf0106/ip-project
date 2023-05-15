@@ -21,6 +21,6 @@ func (s *UserService) ChooseRole(userId int, role string) error {
 func (s *UserService) UpdateUserInfo(userId int, user domain.User) (domain.User, error) {
 	return s.repo.UpdateUserInfo(userId, user)
 }
-func (s *UserService) ChangeRole(userId int, role string) error {
-	return s.repo.ChangeRole(userId, role)
+func (s *UserService) ChangeRole(userId int, prevRole string, role string) error {
+	return s.repo.ChangeRole(userId, prevRole, role)
 }

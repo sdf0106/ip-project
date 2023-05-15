@@ -41,7 +41,7 @@ func (h *Handler) updateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input dto.UserRoleInput
+	var input dto.ChangeRoleInput
 
 	input, err = utils.RequestBodyParser(r, input)
 
@@ -50,7 +50,7 @@ func (h *Handler) updateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.services.ChangeRole(userId, input.Role); err != nil {
+	if err := h.services.ChangeRole(userId, input.PrevRole, input.Role); err != nil {
 		newErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
