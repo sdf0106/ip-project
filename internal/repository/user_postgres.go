@@ -57,7 +57,7 @@ func (r *UserPostgres) UpdateUserInfo(userId int, user dto.UpdateUserInput) (dom
 		argId++
 	}
 	setQuery := strings.Join(setValues, ", ")
-	query := fmt.Sprintf("UPDATE books SET %s WHERE id=$%d", setQuery, argId)
+	query := fmt.Sprintf("UPDATE users SET %s WHERE id=$%d", setQuery, argId)
 	args = append(args, userId)
 
 	_, err := r.db.Exec(context.Background(), query, args...)
