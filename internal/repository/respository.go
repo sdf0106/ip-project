@@ -53,6 +53,6 @@ type (
 	User interface {
 		ChooseRole(userId int, role string) error
 		UpdateUserInfo(userId int, user domain.User) (domain.User, error)
-		ChangeRole(userId int, role string) error
+		ChangeRole(userId int, prevRole string, role string) error
 	}
 )
