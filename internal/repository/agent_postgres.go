@@ -41,7 +41,7 @@ func (r *AgentPostgres) GetAllAgents() ([]domain.Agent, error) {
 func (r *AgentPostgres) GetAgentById(id int) (domain.Agent, error) {
 	var agent domain.Agent
 
-	query := fmt.Sprintf("SELECT at.id, ut.name, ut.email, at.phone FROM %s ut INNER JOIN %s at ON ut.id = at.user_id WHERE ut.id = $1 ORDER BY at.id", usersTable, agentsTable)
+	query := fmt.Sprintf("SELECT at.id, ut.name, ut.email, at.phone FROM %s ut INNER JOIN %s at ON ut.id=at.user_id WHERE ut.id=$1 ORDER BY at.id", usersTable, agentsTable)
 	row, err := r.db.Query(context.Background(), query, id)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *AgentPostgres) GetAgentById(id int) (domain.Agent, error) {
 func (r *AgentPostgres) GetAgentHouses(id int) ([]domain.House, error) {
 	var houses []domain.House
 
-	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s at INNER JOIN %s ht ON at.id = ht.agent_id WHERE at.id = $1 ORDER BY at.id", agentsTable, housesTable)
+	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s at INNER JOIN %s ht ON at.id=ht.agent_id WHERE at.id=$1 ORDER BY at.id", agentsTable, housesTable)
 	rows, err := r.db.Query(context.Background(), query, id)
 
 	if err != nil {

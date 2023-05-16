@@ -6,11 +6,9 @@ import (
 )
 
 type UpdateUserInput struct {
-	Name     string    `json:"name" validate:"gte=4"`
-	Email    string    `json:"email" validate:"email"`
-	Address  string    `json:"address"`
-	Birthday time.Time `json:"birthday"`
-	UserType string    `json:"user_type"`
+	Name     string `json:"name" validate:"gte=4"`
+	Email    string `json:"email" validate:"email"`
+	UserType string `json:"user_type"`
 }
 
 func (s UpdateUserInput) Validate() error {
@@ -21,7 +19,6 @@ func (s UpdateUserInput) InputToEntity() domain.User {
 	return domain.User{
 		Email:        s.Email,
 		Name:         s.Name,
-		Birthday:     s.Birthday,
 		UserType:     s.UserType,
 		RegisteredAt: time.Now(),
 	}

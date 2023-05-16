@@ -38,7 +38,7 @@ func (r *HousePostgres) GetAllHouses() ([]domain.House, error) {
 func (r *HousePostgres) GetHouseById(houseId int) (domain.House, error) {
 	var house domain.House
 
-	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s ht WHERE ht.id = $1", housesTable)
+	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s ht WHERE ht.id=$1", housesTable)
 	row := r.db.QueryRow(context.Background(), query, houseId)
 
 	if err := row.Scan(&house.Id, &house.Address, &house.OwnerId, &house.AgentId, &house.BuildDate, &house.Price); err != nil {

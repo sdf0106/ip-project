@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sdf0106/ip-project/internal/domain"
-	"github.com/sdf0106/ip-project/internal/dto"
 	"log"
 	"strings"
 )
@@ -22,26 +21,38 @@ func NewUserPostgres(db *pgxpool.Pool) *UserPostgres {
 }
 
 func (r *UserPostgres) ChooseRole(userId int, role string) error {
-	var table string
+	table, err := getTableName(role)
+	if err != nil {
+		return err
+	}
+	query1 := fmt.Sprintf("INSERT INTO %s (user_id) VALUES($1)", table)
+	query2 := fmt.Sprintf("UPDATE %s SET user_type=$1 WHERE id=$2", usersTable)
 
-	switch role {
-	case "client":
-		table = clientsTable
-	case "owner":
-		table = ownersTable
-	case "agent":
-		table = agentsTable
-	default:
-		return errors.New("invalid type of user")
+	tx, err := r.db.Begin(context.Background())
+	if err != nil {
+		return err
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (user_id) VALUES($1)", table)
-	_, err := r.db.Exec(context.Background(), query, userId)
+	_, err = tx.Exec(context.Background(), query1, userId)
+
+	if err != nil {
+		tx.Rollback(context.Background())
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), query2, role, userId)
+
+	if err != nil {
+		tx.Rollback(context.Background())
+		return err
+	}
+
+	tx.Commit(context.Background())
 
 	return err
 }
 
-func (r *UserPostgres) UpdateUserInfo(userId int, user dto.UpdateUserInput) (domain.User, error) {
+func (r *UserPostgres) UpdateUserInfo(userId int, user domain.User) (domain.User, error) {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
 	argId := 1
@@ -70,7 +81,6 @@ func (r *UserPostgres) UpdateUserInfo(userId int, user dto.UpdateUserInput) (dom
 	return result, nil
 }
 
-
 func (r *UserPostgres) ChangeRole(userId int, prevRole string, role string) error {
 	prevRoleTable, err := getTableName(prevRole)
 	if err != nil {
@@ -82,8 +92,9 @@ func (r *UserPostgres) ChangeRole(userId int, prevRole string, role string) erro
 		return err
 	}
 
-	query1 := fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", prevRoleTable)
+	query1 := fmt.Sprintf("DELETE FROM %s WHERE user_id=$1", prevRoleTable)
 	query2 := fmt.Sprintf("INSERT INTO %s (user_id) VALUES($1)", roleTable)
+	query3 := fmt.Sprintf("UPDATE %s AS ut SET ut.user_type=$1 WHERE ut.id=$2", usersTable)
 
 	tx, err := r.db.Begin(context.Background())
 
@@ -96,6 +107,14 @@ func (r *UserPostgres) ChangeRole(userId int, prevRole string, role string) erro
 	}
 
 	_, err = tx.Exec(context.Background(), query2, userId)
+
+	if err != nil {
+		// Rollback the transaction in case of an error
+		tx.Rollback(context.Background())
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), query3, role, userId)
 
 	if err != nil {
 		// Rollback the transaction in case of an error

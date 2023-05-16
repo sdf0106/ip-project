@@ -18,8 +18,11 @@ type Repositories struct {
 func NewRepositories(db *pgxpool.Pool) *Repositories {
 	return &Repositories{
 		Authentication: NewAuthenticationPostgres(db),
+		Agent:          NewAgentPostgres(db),
 		ClientCart:     NewClientCartPostgres(db),
 		House:          NewHousePostgres(db),
+		User:           NewUserPostgres(db),
+		Owner:          NewOwnerPostgres(db),
 	}
 }
 

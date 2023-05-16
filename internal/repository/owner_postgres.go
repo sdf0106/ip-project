@@ -52,7 +52,7 @@ func (r *OwnerPostgres) CreateHouse(userId int, house domain.House) (int, error)
 }
 
 func (r *OwnerPostgres) DeleteHouse(ownerId int, houseId int) error {
-	query := fmt.Sprintf("DELETE FROM %s ht USING %s ot WHERE ot.id = $1 AND ot.user_id = ht.owner_id AND ht.house_id = $2", housesTable, ownersTable)
+	query := fmt.Sprintf("DELETE FROM %s ht USING %s ot WHERE ot.id=$1 AND ot.user_id=ht.owner_id AND ht.house_id=$2", housesTable, ownersTable)
 	_, err := r.db.Exec(context.Background(), query, ownerId, houseId)
 
 	return err
@@ -66,7 +66,7 @@ func (r *OwnerPostgres) UpdateHouse(ownerId int, house domain.House) (domain.Hou
 
 func (r *OwnerPostgres) HireAgent(ownerId int, houseId int, agentId int) (int, error) {
 
-	query := fmt.Sprintf("UPDATE %s ht SET ht.agent_id = $1 FROM %s ot WHERE ot.user_id = $2 AND ot.id = ht.owner_id AND ht.id = $3", housesTable, ownersTable)
+	query := fmt.Sprintf("UPDATE %s AS ht SET ht.agent_id=$1 FROM %s AS ot WHERE ot.user_id=$2 AND ot.id=ht.owner_id AND ht.id=$3", housesTable, ownersTable)
 	_, err := r.db.Exec(context.Background(), query, agentId, ownerId, houseId)
 
 	if err != nil {

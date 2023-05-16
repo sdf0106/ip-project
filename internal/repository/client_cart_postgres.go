@@ -20,7 +20,7 @@ func NewClientCartPostgres(db *pgxpool.Pool) *ClientCartPostgres {
 func (r *ClientCartPostgres) GetCart(clientId int) ([]domain.House, error) {
 	var houses []domain.House
 
-	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s cct INNER JOIN %s ht ON cct.house_id = ht.id WHERE cct.client_id = $1 ORDER BY ht.id", clientCartTable, housesTable)
+	query := fmt.Sprintf("SELECT ht.id, ht.address, ht.owner_id, ht.agent_id, ht.build_date, ht.price FROM %s cct INNER JOIN %s ht ON cct.house_id=ht.id WHERE cct.client_id=$1 ORDER BY ht.id", clientCartTable, housesTable)
 	rows, err := r.db.Query(context.Background(), query, clientId)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *ClientCartPostgres) AddToCart(clientId int, houseId int) error {
 }
 
 func (r *ClientCartPostgres) RemoveFromCart(clientId int, houseId int) error {
-	query := fmt.Sprintf("DELETE FROM %s cct WHERE cct.client_id = $1 AND cct.house_id = $2", clientCartTable)
+	query := fmt.Sprintf("DELETE FROM %s AS cct WHERE cct.client_id=$1 AND cct.house_id=$2", clientCartTable)
 	_, err := r.db.Exec(context.Background(), query, clientId, houseId)
 
 	return err
